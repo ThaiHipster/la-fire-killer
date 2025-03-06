@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +6,7 @@ import ChatHistory, { ChatMessage } from './ChatHistory';
 import ChatInput from './ChatInput';
 import VoiceVisualizer from './VoiceVisualizer';
 import { cn } from '@/lib/utils';
+import { sendChatRequest } from '@/lib/openai';
 
 interface ChatInterfaceProps {
   className?: string;
@@ -25,7 +25,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const { toast } = useToast();
 
-  const handleSendMessage = useCallback((content: string) => {
+  const handleSendMessage = useCallback(async (content: string) => {
     const newUserMessage: ChatMessage = {
       id: uuidv4(),
       content,
@@ -36,29 +36,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     setMessages(prev => [...prev, newUserMessage]);
     setIsAgentTyping(true);
     
-    // Simulate agent response after a delay
-    setTimeout(() => {
-      const responses = [
-        "I can help you with that information. Let me find that for you.",
-        "According to government records, the information you're looking for is...",
-        "That's a great question about government services. Here's what I found:",
-        "Based on the latest policy updates, I can tell you that...",
-        "Let me check the official guidelines on that topic for you."
-      ];
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    try {
+      // Send the updated messages array to the OpenAI API
+      const updatedMessages = [...messages, newUserMessage];
+      const response = await sendChatRequest(updatedMessages);
       
       const newAgentMessage: ChatMessage = {
         id: uuidv4(),
-        content: randomResponse,
+        content: response,
         type: 'agent',
         timestamp: new Date(),
       };
       
-      setIsAgentTyping(false);
       setMessages(prev => [...prev, newAgentMessage]);
-    }, 1500);
-  }, []);
+    } catch (error) {
+      console.error('Error getting response from OpenAI:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get a response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAgentTyping(false);
+    }
+  }, [messages, toast]);
 
   const handleStartRecording = useCallback(() => {
     // In a real implementation, this would use the Web Speech API or another speech recognition library

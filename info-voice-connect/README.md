@@ -4,6 +4,18 @@
 
 **URL**: https://lovable.dev/projects/83273933-1781-4cb6-9157-7ca864d99328
 
+## ChatGPT Integration
+
+This project integrates with OpenAI's ChatGPT API to provide a chatbot experience. To set up the integration:
+
+1. Get an API key from [OpenAI's platform](https://platform.openai.com/api-keys)
+2. Create a `.env` file in the root directory (or copy from `.env.example`)
+3. Add your API key to the `.env` file:
+   ```
+   VITE_OPENAI_API_KEY=your_openai_api_key_here
+   ```
+4. Restart the development server if it's already running
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
